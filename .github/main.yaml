@@ -1,41 +1,54 @@
+name: Development
 
-name: Develompment
 on:
+  # add a trigger for the push event
   push:
+    # Run when commits are pushed to mainline branch (main or master)
+    # Set this to the mainline branch you are using
     branches:
       - main
 
 jobs:
-  bulid-test:
-    runs-on: 
-    steps:
-    -uses: actions/checkout@v2
+  build-test:
 
+    runs-on: ubuntu-latest
+
+    steps:
+    # add a step to checkout the code
+    - uses: actions/checkout@v2
     # add a step to install .NET SDK 7
     - name: Setup .NET SDK
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 7.0.100-preview.7.21379.14
+        dotnet-version: 7.0.100
+
     # add a step to restore NuGet packages
     - name: Restore NuGet Packages
       run: dotnet restore
+    
     # add a step to build the solution
     - name: Build
       run: dotnet build --configuration Release
-      # add a step to test the solution
+
+    # add a step to test the solution
     - name: Test
       run: dotnet test --no-build --verbosity normal
-      # add a step to publish src/WebApi
-    - name: Publish
+    
+    # add a step to publish src/WebApi
+    - name: publish
       run: dotnet publish src/WebApi --configuration Release --output publish
-      # add a step to login to Azure
+    
+    # add a step to login to Azure
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-      # Deploy to Azure Web apps
-    - name: 'Run Azure webapp deploy action using publish profile credentials'
+    
+    # Deploy to Azure Web apps
+    - name: Azure WebApp Deploy
       uses: azure/webapps-deploy@v2
-      with: 
-        app-name: ${{ secrets.AZURE_WEBAPP_NAME }} # Replace with your app name
+      with:
+        app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
         package: publish
+
+      
